@@ -2,7 +2,12 @@
   "author": "Eric Miller<emiller42@gmail.com>",
   "description": "A backend for StatsD to emit stats to Splunk HTTP Event Collector",
   "name": "splunk-statsd-backend",
-  "version": "0.0.1",
+  "version": "0.1.0",
+  "homepage": "https://github.com/emiller42/splunk-statsd-backend",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emiller42/splunk-statsd-backend.git"
+  },
   "main": "lib/splunkdriver.js",
   "dependencies": {
     "request": "~2.79.0"
@@ -13,6 +18,7 @@
     "node": "*"
   },
   "keywords": [
+    "metrics",
     "statsd",
     "splunk"
   ], 
