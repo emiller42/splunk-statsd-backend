@@ -128,7 +128,7 @@ Output:
   "event": {
     "count": 98
   },
-  "fields": {,
+  "fields": {
     "type": "set",
     "dims": ["prod", "webserver", "clientips"]
   },
