@@ -60,7 +60,7 @@ Output:
     "rate": 123.4,
     "count": 1234
   },
-  "fields": {,
+  "fields": {
     "type": "counter",
     "dims": ["prod", "webserver", "requests"]
   },
