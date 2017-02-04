@@ -18,13 +18,14 @@ $ npm install splunk-statsd-backend
     useSSL: true,            // HEC is using SSL (Default: true)
     strictSSL: true,         // Should collectd should validate ssl certificates. Set to false if Splunk is using self-signed certs. (Default: true)
     splunkToken: 'abcde',    // HEC token for authentication with Splunk (required)
+    globalDimensions: [],    // Array of additional dimensions to include on all metrics. (default: [])
     // the following are somewhat equivalent to the 'prefix*' options for the graphite backend
     timerLabel: 'timer',     // Label applied to all timer metrics (default: 'timer')
-    counterLabel: counter,   // Label applied to all counter metrics (default: 'counter')
-    gaugeLabel: gauge,       // Label applied to all gauge metrics (default: 'gauge')
-    setLabel: Set,           // Label applied to all set metrics (default: 'set')
+    counterLabel: 'counter', // Label applied to all counter metrics (default: 'counter')
+    gaugeLabel: 'gauge',     // Label applied to all gauge metrics (default: 'gauge')
+    setLabel: 'set',         // Label applied to all set metrics (default: 'set')
     // the following populate splunk-specific fields
-    host: 'foo',             // Specify a 'host' value for the events sent to Splunk. Leave unset to let Splunk infer this value.  
+    host: 'foo',             // Specify a 'host' value for the events sent to Splunk. Leave unset to let Splunk infer this value.
     source: 'statsd',        // Specify a 'source' value for the events sent to Splunk.  (default: statsd)
     sourcetype: _json,       // Specify a 'sourcetype' value for the events sent to Splunk. (default: _json)
     index: 'main'            // Specify the target index for the events sent to Splunk.  Leave unset to let Splunk control destination index.
@@ -33,28 +34,35 @@ $ npm install splunk-statsd-backend
 ```
 
 # Implementation Details and Examples
-This backend will transform statsd metrics into a format suitable for batch collection by the Splunk HTTP Event Collector.  Further, the events are properly formed JSON, allowing ['Indexed Extractions'](http://dev.splunk.com/view/event-collector/SP-CAAAFB6) to be applied out of the box.  All metrics are sent in a single HTTP POST request to the collector.  
+This backend will transform statsd metrics into a format suitable for batch collection by the Splunk HTTP Event Collector.  Further, the events are properly formed JSON, allowing ['Indexed Extractions'](http://dev.splunk.com/view/event-collector/SP-CAAAFB6) to be applied out of the box.  All metrics are sent in a single HTTP POST request to the collector.
 
 A batch event follows this format:
 ```js
-{ "time": <timestamp>, "source": "my_source", "sourcetype": "my_sourcetype", "index": "my_index", "event": {...event payload...} }
+{ "time": <timestamp>, "source": "my_source", "sourcetype": "my_sourcetype", "index": "my_index", "fields": {"indexed_field": "value"}, "event": {<event_payload>} }
 ```
 
-Where the event payload will contain all relevant fields for the metrics.  (Examples further down)
+Where the event payload will contain all relevant fields for the metrics.
 
-## Field Names
-* `metricType` will be set according to the *Label fields.  ('timer', 'counter', etc.)
-* `metricName` will be a direct passthrough of the metric name provided to statsd.  (`my.counter:123|c` sets `metricName = "my.counter"`)
-* Other event field names are derived from the stats they represent.  
+## Fields
+* metadata describing the event will be passed as index_time fields.  (`type`, `dims`)
+* `type` will be set according to the *Label fields.  (`timer`, `counter`, etc.)
+* `dims` will be an array derived from the metric name provided to statsd.  (`my.counter:123|c` sets `"dims": ["my", "counter"]`)
+* `globalDimensions`, if set, will append it's values to the above.
+* Other event field names are derived from the stats they represent.
 
 ## Example Counter
+Metric: `prod.webserver.requests:1234|c`
+
+Output:
 ```js
 {
   "event": {
-    "rate": 1704.6,
-    "count": 17046,
-    "metricType": "counter",
-    "metricName": "foo.requests"
+    "rate": 123.4,
+    "count": 1234
+  },
+  "fields": {,
+    "type": "counter",
+    "dims": ["prod", "webserver", "requests"]
   },
   "time": 1485314310,
   "source": "statsd",
@@ -86,9 +94,11 @@ Where the event payload will contain all relevant fields for the metrics.  (Exam
       "bin_150": 66,
       "bin_200": 60,
       "bin_inf": 118
-    },
-    "metricType": "timer",
-    "metricName": "foo.duration"
+    }
+  },
+  "fields": {
+    "type": "timer",
+    "dims": ["prod", "webserver", "responseTime"]
   },
   "time": 1485314310,
   "source": "statsd",
@@ -100,9 +110,11 @@ Where the event payload will contain all relevant fields for the metrics.  (Exam
 ```js
 {
   "event": {
-    "value": 2,
-    "metricType": "gauge",
-    "metricName": "foo.pct_util"
+    "value": 2
+  },
+  "fields": {
+    "type": "gauge",
+    "dims": ["prod", "webserver", "cpu"]
   },
   "time": 1485314310,
   "source": "statsd",
@@ -114,9 +126,11 @@ Where the event payload will contain all relevant fields for the metrics.  (Exam
 ```js
 {
   "event": {
-    "count": 98,
-    "metricType": "set",
-    "metricName": "foo.uniques"
+    "count": 98
+  },
+  "fields": {,
+    "type": "set",
+    "dims": ["prod", "webserver", "clientips"]
   },
   "time": 1485314310,
   "source": "statsd",
@@ -125,7 +139,7 @@ Where the event payload will contain all relevant fields for the metrics.  (Exam
 ```
 
 # Backend Metrics
-The following internal metrics are calculated and emitted under the `splunkStats` metricName
+The following internal metrics are calculated and emitted under the `splunkStats` dimension
 * `calculationTime` - time spent parsing metrics in ms
 * `numStats` - The number of metrics processed
 * `flush_length` - the length of the event payload sent to Splunk
