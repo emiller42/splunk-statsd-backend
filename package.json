@@ -12,15 +12,24 @@
   "dependencies": {
     "request": "~2.79.0"
   },
-  "devDependencies": {},
-  "optionalDependencies": {},
+  "devDependencies": {
+    "jest": "^27.0.3"
+  },
   "engines": {
     "node": "*"
+  },
+  "scripts": {
+    "test": "jest"
   },
   "keywords": [
     "metrics",
     "statsd",
     "splunk"
-  ], 
-  "license": {"type": "MIT"}
+  ],
+  "license": {
+    "type": "MIT"
+  },
+  "jest": {
+    "clearMocks": true
+  }
 }
