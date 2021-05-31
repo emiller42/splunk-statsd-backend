@@ -10,7 +10,7 @@
   },
   "main": "lib/splunkdriver.js",
   "dependencies": {
-    "request": "~2.79.0"
+    "request": "^2.88.2"
   },
   "devDependencies": {
     "jest": "^27.0.3"
@@ -26,9 +26,7 @@
     "statsd",
     "splunk"
   ],
-  "license": {
-    "type": "MIT"
-  },
+  "license": "MIT",
   "jest": {
     "clearMocks": true
   }
