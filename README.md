@@ -256,23 +256,4 @@ The following internal metrics are calculated and emitted under the `splunkStats
 $ cd /path/to/splunk-statsd-backend
 $ npm install
 $ npm test
-...
-splunk-statsd-backend % npm test
-
-> splunk-statsd-backend@0.1.0 test
-> jest
-
- PASS  lib/splunkdriver.test.js
-  ✓ successful init (1 ms)
-  ✓ empty flush (1 ms)
-  ✓ flush with counters (1 ms)
-  ✓ flush with gauges (1 ms)
-  ✓ flush with sets
-  ✓ flush with timers (1 ms)
-
-Test Suites: 1 passed, 1 total
-Tests:       6 passed, 6 total
-Snapshots:   0 total
-Time:        0.497 s
-Ran all test suites.
 ```
