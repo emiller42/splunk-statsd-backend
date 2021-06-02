@@ -1,6 +1,6 @@
 splunk-statsd-backend
 =====================
-Backend plugin for [statsd](https://github.com/etsy/statsd) to output metrics to [Splunk](https://www.splunk.com) HTTP Event Collector (HEC)
+Backend plugin for [statsd](https://github.com/statsd/statsd) to output metrics to [Splunk](https://www.splunk.com) HTTP Event Collector (HEC)
 
 # Installation
 ```bash
@@ -132,3 +132,29 @@ The following internal metrics are calculated and emitted under the `splunkStats
 * `flush_time` - the response time of the POST request to Splunk
 * `last_exception` - the timestamp of the last time a POST failed
 * `last_flush` - the timestamp of the last flush
+
+# Running tests
+```sh
+$ cd /path/to/splunk-statsd-backend
+$ npm install
+$ npm test
+...
+splunk-statsd-backend % npm test
+
+> splunk-statsd-backend@0.1.0 test
+> jest
+
+ PASS  lib/splunkdriver.test.js
+  ✓ successful init (1 ms)
+  ✓ empty flush (1 ms)
+  ✓ flush with counters (1 ms)
+  ✓ flush with gauges (1 ms)
+  ✓ flush with sets
+  ✓ flush with timers (1 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        0.497 s
+Ran all test suites.
+```
