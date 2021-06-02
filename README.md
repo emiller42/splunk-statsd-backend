@@ -20,19 +20,20 @@ $ npm install splunk-statsd-backend
     splunkToken: 'abcde',    // HEC token for authentication with Splunk (required)
     // the following are somewhat equivalent to the 'prefix*' options for the graphite backend
     timerLabel: 'timer',     // Label applied to all timer metrics (default: 'timer')
-    counterLabel: counter,   // Label applied to all counter metrics (default: 'counter')
-    gaugeLabel: gauge,       // Label applied to all gauge metrics (default: 'gauge')
+    counterLabel: 'counter', // Label applied to all counter metrics (default: 'counter')
+    gaugeLabel: 'gauge',     // Label applied to all gauge metrics (default: 'gauge')
     setLabel: Set,           // Label applied to all set metrics (default: 'set')
     // the following populate splunk-specific fields
     host: 'foo',             // Specify a 'host' value for the events sent to Splunk. Leave unset to let Splunk infer this value.  
     source: 'statsd',        // Specify a 'source' value for the events sent to Splunk.  (default: statsd)
-    sourcetype: _json,       // Specify a 'sourcetype' value for the events sent to Splunk. (default: _json)
-    index: 'main'            // Specify the target index for the events sent to Splunk.  Leave unset to let Splunk control destination index.
-  }
+    sourcetype: '_json',     // Specify a 'sourcetype' value for the events sent to Splunk. (default: _json)
+    index: 'main',           // Specify the target index for the events sent to Splunk.  Leave unset to let Splunk control destination index.
+    useMetrics: false        // Send data in Splunk Metrics format. (default: false)
+}
 }
 ```
 
-# Implementation Details and Examples
+# Implementation Details and Examples (JSON formatted events)
 This backend will transform statsd metrics into a format suitable for batch collection by the Splunk HTTP Event Collector.  Further, the events are properly formed JSON, allowing ['Indexed Extractions'](http://dev.splunk.com/view/event-collector/SP-CAAAFB6) to be applied out of the box.  All metrics are sent in a single HTTP POST request to the collector.  
 
 A batch event follows this format:
@@ -121,6 +122,123 @@ Where the event payload will contain all relevant fields for the metrics.  (Exam
   "time": 1485314310,
   "source": "statsd",
   "sourcetype": "_json"
+}
+```
+
+# Implementation Details and Examples (Splunk Metrics)
+when setting `useMetrics: true` in your config, the backend will format StatsD metrics in a way suitable for ingestion as [Splunk Metrics](https://docs.splunk.com/Documentation/Splunk/8.2.0/Metrics/Overview). All metrics of a given type will be included in a single event object using the [multiple-metric JSON format](https://docs.splunk.com/Documentation/Splunk/8.2.0/Metrics/GetMetricsInOther#The_multiple-metric_JSON_format) and all objects will be sent in a single POST request to the collector.
+
+The event object follows this format:
+```js
+{ 
+  "time": "<timestamp>", 
+  "event": "metric", 
+  "host": "<host>", 
+  "source": "<source>", 
+  "sourcetype": "<sourcetype>", 
+  "index": "<index>", 
+  "event": {
+    "metric_type": "<type>",
+    // repeated metrics
+    "metric_name:<metric_name>": "<value>". 
+  } 
+}
+```
+
+## Notes on Sourcetype
+
+Splunk has build-in handling of some sourcetypes when processing metrics. The [`statsd` sourcetype](https://docs.splunk.com/Documentation/Splunk/8.2.0/Metrics/GetMetricsInStatsd) in particular is used to send raw StatsD data directly to Splunk, rather than to a StatsD server for processing. It is recommended that you avoid these built-in sourcetypes when using this backend. 
+
+## Field Names
+
+* The `metric_type` dimension will be set according to the *Label fields (`timer`, `counter`, etc)
+* In cases where the metric has a single value (gauges, sets) the metric name will be a direct passthrough of the metric name provided by StatsD. (`my.gauge:97|g` becomes `"metric_name:my.gauge": 97`)
+* In cases where the metric has multiple values (counters, timers) the specific measurement will be appended following dot-notation. (`my.counter:123|c` sets `metric_name:my.counter.count` and `metric_name:my.counter.rate`)
+
+## Example Counters
+
+```js
+{
+  "time": 1485314310,
+  "event": "metric",
+  "source": "statsd",
+  "sourcetype": "_json",
+  "event": {
+    "metric_type": "counter",
+    "metric_name:foo.count": 17046,
+    "metric_name:foo.rate": 1704.6,
+    "metric_name:bar.count": 32567,
+    "metric_name:bar.rate": 3256.7,
+    // etc.
+  }
+}
+```
+
+## Example Timer (with Histogram)
+
+```js
+{
+  "time": 1485314310,
+  "event": "metric",
+  "source": "statsd",
+  "sourcetype": "_json",
+  "event": {
+    "metric_type": "timer",
+    "metric_name:foo.duration.count_90": 304,
+    "metric_name:foo.duration.mean_90": 143.07236842105263,
+    "metric_name:foo.duration.upper_90": 280,
+    "metric_name:foo.duration.sum_90": 43494,
+    "metric_name:foo.duration.sum_squares_90": 8083406,
+    "metric_name:foo.duration.std": 86.5952973729948,
+    "metric_name:foo.duration.upper": 300,
+    "metric_name:foo.duration.lower": 1,
+    "metric_name:foo.duration.count": 338,
+    "metric_name:foo.duration.count_ps": 33.8,
+    "metric_name:foo.duration.sum": 53402,
+    "metric_name:foo.duration.sum_squares": 10971776,
+    "metric_name:foo.duration.mean": 157.9940828402367,
+    "metric_name:foo.duration.median": 157.5,
+    "metric_name:foo.duration.histogram.bin_50": 49,
+    "metric_name:foo.duration.histogram.bin_100": 45,
+    "metric_name:foo.duration.histogram.bin_150": 66,
+    "metric_name:foo.duration.histogram.bin_200": 60,
+    "metric_name:foo.duration.histogram.bin_inf": 118
+    // etc.
+  }
+}
+```
+
+## Example Gauges
+
+```js
+{
+  "time": 1485314310,
+  "event": "metric",
+  "source": "statsd",
+  "sourcetype": "_json",
+  "event": {
+    "metric_type": "gauge",
+    "metric_name:foo.pct_util": 2,
+    "metric_name:bar.pct_util": 17,
+    // etc.
+  }
+}
+```
+
+## Example Sets
+
+```js
+{
+  "time": 1485314310,
+  "event": "metric",
+  "source": "statsd",
+  "sourcetype": "_json",
+  "event": {
+    "metric_type": "set",
+    "metric_name:foo.uniques": 98,
+    "metric_name:bar.uniques": 127,
+    // etc.
+  }
 }
 ```
 
