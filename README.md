@@ -22,7 +22,7 @@ $ npm install splunk-statsd-backend
     timerLabel: 'timer',     // Label applied to all timer metrics (default: 'timer')
     counterLabel: 'counter', // Label applied to all counter metrics (default: 'counter')
     gaugeLabel: 'gauge',     // Label applied to all gauge metrics (default: 'gauge')
-    setLabel: Set,           // Label applied to all set metrics (default: 'set')
+    setLabel: 'set',         // Label applied to all set metrics (default: 'set')
     // the following populate splunk-specific fields
     host: 'foo',             // Specify a 'host' value for the events sent to Splunk. Leave unset to let Splunk infer this value.  
     source: 'statsd',        // Specify a 'source' value for the events sent to Splunk.  (default: statsd)
