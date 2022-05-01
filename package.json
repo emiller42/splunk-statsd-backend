@@ -10,7 +10,7 @@
   },
   "main": "lib/splunkdriver.js",
   "dependencies": {
-    "request": "^2.88.2"
+    "axios": "^0.27.2"
   },
   "devDependencies": {
     "jest": "^27.0.3"
