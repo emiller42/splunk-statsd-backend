@@ -25,7 +25,7 @@ Maintainers will continue to do the following on a best-effort basis:
 
 ## Deprecation Plan
 
-There currently no deprecation schedule or date. The intent is to keep the library healthy in it's current form. If related technologies evolve to the point that that is not possible without significant effort, (Ex: major breaking changes to the StatsD plugin model) then Maintainers will favor deprecation rather than accomodating the change.
+There currently no deprecation schedule or date. The intent is to keep the library healthy in it's current form. If related technologies evolve to the point that that is not possible without significant effort, (Ex: major breaking changes to the StatsD plugin model) then Maintainers will favor deprecation rather than accommodating the change.
 
 ---
 
@@ -43,7 +43,7 @@ $ npm install splunk-statsd-backend
     splunkHost: '127.0.0.1', // the hostname of the Splunk Collector you wish to send metrics (default: 127.0.0.1)
     splunkPort: 8088,        // port that the event collector is listening on (Default: 8088)
     useSSL: true,            // HEC is using SSL (Default: true)
-    strictSSL: true,         // Should collectd should validate ssl certificates. Set to false if Splunk is using self-signed certs. (Default: true)
+    strictSSL: true,         // Should collectd validate ssl certificates. Set to false if Splunk is using self-signed certs. (Default: true)
     splunkToken: 'abcde',    // HEC token for authentication with Splunk (required)
     // the following are somewhat equivalent to the 'prefix*' options for the graphite backend
     timerLabel: 'timer',     // Label applied to all timer metrics (default: 'timer')
