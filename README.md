@@ -2,6 +2,33 @@ splunk-statsd-backend
 =====================
 Backend plugin for [statsd](https://github.com/statsd/statsd) to output metrics to [Splunk](https://www.splunk.com) HTTP Event Collector (HEC)
 
+# Support
+
+This plugin is in *Maintenance Mode*.
+
+As it has been a number of years since I have worked with either Splunk or StatsD, and given the general lack of activity on this project, I have reduced the scope of support in preparation for the eventual deprecation of this library.
+
+The following describes what users should expect from maintainers moving forward.
+
+## In Scope
+
+Maintainers will continue to do the following on a best-effort basis:
+
+*  Maintain compatibility with [supported Node releases](https://github.com/nodejs/release#release-schedule)
+*  Address security vulnerabilities
+*  Address minor bugs
+
+## Out of Scope
+
+*  Feature Requests or Enhancements
+*  Significant updates to address breaking changes in related technologies. (Splunk, StatsD, dependency libraries, etc.)
+
+## Deprecation Plan
+
+There currently no deprecation schedule or date. The intent is to keep the library healthy in it's current form. If related technologies evolve to the point that that is not possible without significant effort, (Ex: major breaking changes to the StatsD plugin model) then Maintainers will favor deprecation rather than accomodating the change.
+
+---
+
 # Installation
 ```bash
 $ cd /path/to/statsd/install
